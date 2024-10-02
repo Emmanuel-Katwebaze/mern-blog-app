@@ -74,7 +74,7 @@ jobs:
             cd ../client
             echo "Stopping and starting frontend..."
             pm2 stop frontend || true
-            pm2 start npm --name frontend -- run serve
+            pm2 start npm --name frontend -- run start
             pm2 save
             echo "Deployment completed successfully!"
           '
