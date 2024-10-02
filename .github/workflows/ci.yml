@@ -42,6 +42,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
           HOST: ${{ secrets.EC2_HOST }}
           USER: ${{ secrets.EC2_USER }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
@@ -52,7 +53,13 @@ jobs:
               mkdir -p ~/capstone/staging
             fi
             cd ~/capstone/staging
+            if [ ! -d .git ]; then
+              echo "Initializing git repository..."
+              git init
+              git remote add origin '"${REPO_URL}"'
+            fi
             git fetch origin main
+            git checkout -f main
             git reset --hard origin/main
             echo "Installing dependencies..."
             yarn install
