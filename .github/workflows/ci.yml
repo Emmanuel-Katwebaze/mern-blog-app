@@ -40,3 +40,33 @@ jobs:
       - name: Build client
         working-directory: ./client
         run: yarn build
+        
+  deploy-and-run:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Deploy to EC2 and Start Application
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
+            cd ~/capstone/staging &&
+            git pull origin main &&
+            yarn install &&
+            cd client &&
+            yarn install &&
+            yarn build &&
+            cd ../api &&
+            pm2 stop backend || true &&
+            pm2 start index.js --name backend --env production &&
+            cd ../client &&
+            pm2 stop frontend || true &&
+            pm2 start npm --name frontend -- run serve &&
+            pm2 save
+          '
