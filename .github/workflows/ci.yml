@@ -72,12 +72,12 @@ jobs:
             yarn add serve
             cd ../api
             echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
-            echo "Stopping and starting backend..."
+            echo "Stopping existing processes..."
             pm2 delete all || true
+            echo "Stopping backend..."
             pm2 start index.js --name backend --env production
             cd ../client
-            echo "Stopping and starting frontend..."
-            pm2 stop frontend || true
+            echo "Starting frontend..."
             pm2 start yarn -- serve -s build -l 3000 --name frontend
             pm2 save
             echo "Deployment completed successfully!"

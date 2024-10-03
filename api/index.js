@@ -14,9 +14,12 @@ const fs = require('fs');
 const salt = bcrypt.genSaltSync(10);
 const secret = 'asdfe45we45w345wegw345werjktjwertkj';
 
-const API_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
+const API_URL = process.env.FRONTEND_URL || 'http://54.156.57.69:3000'
 
-app.use(cors({credentials:true,origin: API_URL}));
+app.use(cors({
+  credentials: true,
+  origin: [API_URL, 'http://localhost:3000'] 
+}));
 
 app.use(express.json());
 app.use(cookieParser());
