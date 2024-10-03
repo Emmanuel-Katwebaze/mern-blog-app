@@ -65,12 +65,12 @@ jobs:
             cd client
             yarn install
             echo "Building client..."
-            echo "REACT_APP_API_URL=http://${HOST}:4000" > .env
+            echo "REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:4000" > .env
             yarn build
             echo "Installing serve..."
             yarn add serve
             cd ../api
-            echo "FRONTEND_URL=http://${HOST}:3000" > .env
+            echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
             echo "Stopping and starting backend..."
             pm2 stop backend || true
             pm2 start index.js --name backend --env production
