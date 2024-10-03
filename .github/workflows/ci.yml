@@ -73,7 +73,7 @@ jobs:
             cd ../api
             echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
             echo "Stopping and starting backend..."
-            pm2 stop backend || true
+            pm2 delete all || true
             pm2 start index.js --name backend --env production
             cd ../client
             echo "Stopping and starting frontend..."
