@@ -62,6 +62,7 @@ jobs:
             git reset --hard origin/main
             echo "Installing dependencies..."
             yarn install
+            echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
             cd client
             yarn install
             echo "Building client..."
