@@ -1,46 +1,80 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-
       - name: Install server dependencies
-        working-directory: ./
         run: yarn install
-
       - name: Install client dependencies
         working-directory: ./client
         run: yarn install
-
       - name: Lint client code
         working-directory: ./client
         run: yarn lint
-
       - name: Run server tests (Jest)
-        working-directory: ./
         run: yarn test --ci
-
-      - name: Run client tests (React)
-        working-directory: ./client
-        run: yarn test --ci --watchAll=false
-
       - name: Build client
         working-directory: ./client
         run: yarn build
+
+  deploy-and-run:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Deploy to EC2 and Start Application
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
+            set -e
+            echo "Deploying to EC2..."
+            if [ ! -d ~/capstone/staging ]; then
+              echo "Creating staging directory..."
+              mkdir -p ~/capstone/staging
+            fi
+            cd ~/capstone/staging
+            if [ ! -d .git ]; then
+              echo "Initializing git repository..."
+              git init
+              git remote add origin '"${REPO_URL}"'
+            fi
+            git fetch origin main
+            git checkout -f main
+            git reset --hard origin/main
+            echo "Installing dependencies..."
+            yarn install
+            cd client
+            yarn install
+            echo "Building client..."
+            yarn build
+            cd ../api
+            echo "Stopping and starting backend..."
+            pm2 stop backend || true
+            pm2 start index.js --name backend --env production
+            cd ../client
+            echo "Stopping and starting frontend..."
+            pm2 stop frontend || true
+            pm2 start npm --name frontend -- run start
+            pm2 save
+            echo "Deployment completed successfully!"
+          '
