@@ -14,7 +14,10 @@ const fs = require('fs');
 const salt = bcrypt.genSaltSync(10);
 const secret = 'asdfe45we45w345wegw345werjktjwertkj';
 
-// app.use(cors({credentials:true,origin:'http://localhost:3000'}));
+const API_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
+
+app.use(cors({credentials:true,origin: API_URL}));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
@@ -161,6 +164,7 @@ app.get('/post', async (req,res) => {
 app.get('/post/:id', async (req, res) => {
   const {id} = req.params;
   const postDoc = await Post.findById(id).populate('author', ['username']);
+  console.log(postDoc)
   res.json(postDoc);
 })
 
