@@ -14,7 +14,8 @@
     "supertest": "^7.0.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "yarn install --prefix ./client && yarn run build --prefix ./client && yarn install"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
