@@ -60,25 +60,11 @@ jobs:
             git fetch origin main
             git checkout -f main
             git reset --hard origin/main
-            echo "Installing dependencies..."
-            yarn install
-            echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
-            cd client
-            yarn install
-            echo "Building client..."
-            echo "REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:4000" > .env
+            echo "Building entire application"
             yarn build
-            echo "Installing serve..."
-            yarn add serve
-            cd ../api
             echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
-            echo "Stopping existing processes..."
-            pm2 delete all || true
-            echo "Stopping backend..."
-            pm2 start index.js --name backend --env production
-            cd ../client
-            echo "Starting frontend...."
-            pm2 start yarn -- serve -s build -l 3000 --name frontend
-            pm2 save
+            cd api
+            echo "Starting application...."
+            node index.js
             echo "Deployment completed successfully!"
           '
