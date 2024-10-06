@@ -77,7 +77,7 @@ jobs:
             echo "Stopping backend..."
             pm2 start index.js --name backend --env production
             cd ../client
-            echo "Starting frontend..."
+            echo "Starting frontend...."
             pm2 start yarn -- serve -s build -l 3000 --name frontend
             pm2 save
             echo "Deployment completed successfully!"
