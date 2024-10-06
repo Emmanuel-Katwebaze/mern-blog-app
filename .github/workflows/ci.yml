@@ -62,7 +62,7 @@ jobs:
             git reset --hard origin/main
             echo "Creating .env file"
             cd client
-            echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
+            echo "REACT_APP_API_URL=http://${{ secrets.EC2_HOST }}:4000" > .env
             echo "Building entire application"
             cd ../
             yarn build
