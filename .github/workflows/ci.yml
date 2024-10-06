@@ -63,6 +63,7 @@ jobs:
             echo "Building entire application"
             yarn build
             echo "FRONTEND_URL=http://${{ secrets.EC2_HOST }}:3000" > .env
+            echo "PORT=4000" >> .env
             cd api
             echo "Starting application...."
             node index.js
